@@ -6,11 +6,9 @@
 /*   By: efayolle <efayolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 11:23:13 by efayolle          #+#    #+#             */
-/*   Updated: 2024/01/26 11:23:25 by efayolle         ###   ########.fr       */
+/*   Updated: 2024/01/30 11:15:00 by efayolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-
 
 static int	result(int i, const char *src, int sign)
 {
