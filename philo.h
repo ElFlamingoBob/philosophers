@@ -6,7 +6,7 @@
 /*   By: efayolle <efayolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 09:14:03 by efayolle          #+#    #+#             */
-/*   Updated: 2024/01/30 13:46:21 by efayolle         ###   ########.fr       */
+/*   Updated: 2024/01/31 11:37:07 by efayolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,6 @@
 # include <stdio.h>
 # include <unistd.h>
 # include <pthread.h>
-
-
 
 typedef struct s_data_arg
 {
@@ -37,12 +35,17 @@ typedef struct s_data
 	pthread_mutex_t	*fork_philo_m1_p;
 	int				index_philo;
 	t_data_arg		datarg;
+	long			start_ms;
+	long			last_meal;
+	int				*start;
 }							t_data;
-
-
 
 int		ft_atoi(const char *src);
 
 void	print_state(int state, int timestamp, int philo_num);
+
+void	ft_eat(t_data *data);
+void	ft_sleep(t_data *data);
+void	ft_think(t_data *data);
 
 #endif
