@@ -6,86 +6,49 @@
 /*   By: efayolle <efayolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 09:12:39 by efayolle          #+#    #+#             */
-/*   Updated: 2024/02/07 13:31:54 by efayolle         ###   ########.fr       */
+/*   Updated: 2024/02/08 10:26:17 by efayolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-int	core2(t_data **data)
-{
-	int	aliveornot;
-	int	start;
-
-	start = 0;
-	aliveornot = 0;
-	while (aliveornot++ < (*data)->datarg.notepme)
-	{
-		printf("%d %d\n", (*data)->index_philo, aliveornot);
-		if (ft_eat(*data, start) == 1)
-		{
-			(*data)->state_p[(*data)->index_philo - 1] = 1;
-			return (1);
-		}
-		if (ft_sleep(*data) == 1)
-		{
-			(*data)->state_p[(*data)->index_philo - 1] = 1;
-			return (1);
-		}
-		if (ft_think(*data) == 1)
-		{
-			(*data)->state_p[(*data)->index_philo - 1] = 1;
-			return (1);
-		}
-		start = 1;
-	}
-	return (0);
-}
-
-int	core(t_data **data)
-{
-	int	aliveornot;
-	int	start;
-
-	start = 0;
-	aliveornot = 1;
-	while (aliveornot)
-	{
-		if (ft_eat(*data, start) == 1)
-		{
-			(*data)->state_p[(*data)->index_philo - 1] = 1;
-			return (1);
-		}
-		if (ft_sleep(*data) == 1)
-		{
-			(*data)->state_p[(*data)->index_philo - 1] = 1;
-			return (1);
-		}
-		if (ft_think(*data) == 1)
-		{
-			(*data)->state_p[(*data)->index_philo - 1] = 1;
-			return (1);
-		}
-		start = 1;
-	}
-	return (0);
-}
-
-void	thread_destroy(t_data *data)
+void	thread_destroy(t_data *data, int *state)
 {
 	int	i;
-	int j;
 
 	i = -1;
 	while (++i < data->datarg.num_of_philo)
 	{
-		// write(2, "1", 1);
-		j = pthread_join(data[i].philo, NULL);
-		// printf("%d\n", j);
-		// write(2, "2", 1);
+		pthread_join(data[i].philo, NULL);
 		pthread_mutex_destroy(&data[i].fork_philo);
-		// write(2, "3", 1);
 	}
+	free(state);
+	free(data);
+}
+
+void	*ft_thread(void *arg)
+{
+	struct timeval	current_time;
+	t_data			*data;
+
+	data = (t_data *)arg;
+	while (*data->start)
+		;
+	gettimeofday(&current_time, NULL);
+	data->start_ms = current_time.tv_sec * 1000 + current_time.tv_usec / 1000;
+	if (data->index_philo % 2 == 0)
+		usleep (data->datarg.tto_eat * 1000);
+	if (data->datarg.boolnotepme == 1)
+	{
+		if (core2(&data) == 1)
+			return (NULL);
+	}
+	else
+	{
+		if (core(&data) == 1)
+			return (NULL);
+	}
+	return (NULL);
 }
 
 void	thread_init(t_data *data)
@@ -110,34 +73,6 @@ void	thread_init(t_data *data)
 		pthread_create(&data[i].philo, NULL, ft_thread, &data[i]);
 		data[i].index_philo = i + 1;
 	}
-}
-
-void	*ft_thread(void *arg)
-{
-	struct timeval	current_time;
-	t_data			*data;
-
-	data = (t_data *)arg;
-	while (*data->start)
-		;
-	gettimeofday(&current_time, NULL);
-	data->start_ms = current_time.tv_sec * 1000 + current_time.tv_usec / 1000;
-	if (data->index_philo % 2 == 0)
-		usleep (data->datarg.tto_eat * 1000);
-	if (data->datarg.boolnotepme == 1)
-	{
-		if (core2(&data) == 1)
-		{
-			printf("test %d\n", data->index_philo);
-			return (NULL);
-		}
-	}
-	else
-	{
-		if (core(&data) == 1)
-			return (NULL);
-	}
-	return (NULL);
 }
 
 void	thread_creation(t_data_arg arg)
@@ -166,9 +101,7 @@ void	thread_creation(t_data_arg arg)
 	}
 	thread_init(data);
 	start = 0;
-	thread_destroy(data);
-	free(state);
-	free(data);
+	thread_destroy(data, state);
 }
 
 int	main(int argc, char **argv)

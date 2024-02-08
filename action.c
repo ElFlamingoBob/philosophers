@@ -6,7 +6,7 @@
 /*   By: efayolle <efayolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/31 10:22:56 by efayolle          #+#    #+#             */
-/*   Updated: 2024/02/07 13:26:39 by efayolle         ###   ########.fr       */
+/*   Updated: 2024/02/08 10:06:19 by efayolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,23 +104,4 @@ int	check_tto_die(t_data *data, int s)
 		}
 	}
 	return (0);
-}
-
-void	ft_usleep(int wait)
-{
-	struct timeval	now;
-	long			time;
-	long			diff;
-
-	gettimeofday(&now, NULL);
-	time = now.tv_sec * 1000000 + now.tv_usec;
-	diff = time + wait * 1000;
-	while (time < diff)
-	{
-		if (diff - time > 40)
-			usleep((diff - time) / 2);
-		gettimeofday(&now, NULL);
-		time = now.tv_sec * 1000000 + now.tv_usec;
-	}
-	return ;
 }
