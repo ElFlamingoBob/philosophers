@@ -6,7 +6,7 @@
 /*   By: efayolle <efayolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 09:14:03 by efayolle          #+#    #+#             */
-/*   Updated: 2024/02/08 10:26:20 by efayolle         ###   ########.fr       */
+/*   Updated: 2024/02/14 09:10:37 by efayolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 # include <stdlib.h>
 # include <unistd.h>
 # include <pthread.h>
-
 
 typedef struct s_data_arg
 {
