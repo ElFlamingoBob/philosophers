@@ -1,24 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   print.c                                            :+:      :+:    :+:   */
+/*   ft_bzero.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: efayolle <efayolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/01/26 11:43:52 by efayolle          #+#    #+#             */
-/*   Updated: 2024/04/25 14:52:54 by efayolle         ###   ########.fr       */
+/*   Created: 2024/04/05 09:38:25 by efayolle          #+#    #+#             */
+/*   Updated: 2024/04/24 15:53:42 by efayolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-int	print_state(int philo_num, t_data *data, char *message)
+void	ft_bzero(void *s, size_t n)
 {
-	pthread_mutex_lock(data->print);
-	if (other_thread(data) != 1)
-		printf("%lld %d %s\n", get_time() - data->start_ms, philo_num, message);
-	else
-		return (pthread_mutex_unlock(data->print), 1);
-	pthread_mutex_unlock(data->print);
-	return (0);
+	size_t	i;
+
+	i = 0;
+	while (i < n)
+	{
+		((char *)s)[i] = 0;
+		i++;
+	}
 }

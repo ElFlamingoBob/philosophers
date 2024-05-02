@@ -6,113 +6,85 @@
 /*   By: efayolle <efayolle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 09:12:39 by efayolle          #+#    #+#             */
-/*   Updated: 2024/02/08 10:26:17 by efayolle         ###   ########.fr       */
+/*   Updated: 2024/04/25 15:21:28 by efayolle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+#include <bits/pthreadtypes.h>
 
-void	thread_destroy(t_data *data, int *state)
+void	init_struct_var(t_data *data, t_data_arg arg)
 {
-	int	i;
+	int			i;
+	long long	time;
 
+	time = get_time();
 	i = -1;
-	while (++i < data->datarg.num_of_philo)
+	while (++i < arg.num_of_philo)
 	{
-		pthread_join(data[i].philo, NULL);
-		pthread_mutex_destroy(&data[i].fork_philo);
-	}
-	free(state);
-	free(data);
-}
-
-void	*ft_thread(void *arg)
-{
-	struct timeval	current_time;
-	t_data			*data;
-
-	data = (t_data *)arg;
-	while (*data->start)
-		;
-	gettimeofday(&current_time, NULL);
-	data->start_ms = current_time.tv_sec * 1000 + current_time.tv_usec / 1000;
-	if (data->index_philo % 2 == 0)
-		usleep (data->datarg.tto_eat * 1000);
-	if (data->datarg.boolnotepme == 1)
-	{
-		if (core2(&data) == 1)
-			return (NULL);
-	}
-	else
-	{
-		if (core(&data) == 1)
-			return (NULL);
-	}
-	return (NULL);
-}
-
-void	thread_init(t_data *data)
-{
-	int	i;
-	int	tmp;
-
-	i = -1;
-	tmp = data->datarg.num_of_philo - 1;
-	while (++i < data->datarg.num_of_philo)
-	{
-		if (i == 0)
-		{
-			data[i].fork_philo_m1 = data[tmp].fork_philo;
-			data[i].fork_philo_m1_p = &data[tmp].fork_philo;
-		}
-		else
-		{
-			data[i].fork_philo_m1 = data[i - 1].fork_philo;
-			data[i].fork_philo_m1_p = &data[i - 1].fork_philo;
-		}
-		pthread_create(&data[i].philo, NULL, ft_thread, &data[i]);
+		pthread_mutex_init(&data[i].last_meal_m, NULL);
+		pthread_mutex_init(&data[i].teme_m, NULL);
+		data[i].datarg = arg;
+		data[i].start_ms = time;
+		data[i].last_meal = time;
 		data[i].index_philo = i + 1;
+		data[i].id_forks_l = i;
+		data[i].id_forks_r = (i + 1) % data->datarg.num_of_philo;
+		if (data->datarg.boolnotepme)
+			data[i].time_epe = data->datarg.notepme;
 	}
 }
 
-void	thread_creation(t_data_arg arg)
+void	start_fct(t_data *data, t_data_arg arg)
 {
-	t_data	*data;
-	int		start;
-	int		*state;
-	int		i;
+	int	i;
 
 	i = -1;
-	start = 1;
+	thread_init(data);
+	usleep(data->datarg.tto_die / 2);
+	ft_monitoring(data, arg, i);
+	thread_destroy(data);
+}
+
+void	thread_creation(t_data_arg arg, int i)
+{
+	t_data			*data;
+	t_shared_var	sh_var;
+	t_fork			forks;
+
 	data = malloc(sizeof(t_data) * arg.num_of_philo);
 	if (!data)
 		return ;
-	state = malloc(sizeof(int) * arg.num_of_philo);
-	if (!state)
-		return ;
+	forks.forks = malloc(sizeof(pthread_mutex_t) * arg.num_of_philo);
+	if (!forks.forks)
+		return (free(data));
 	while (++i < arg.num_of_philo)
+		pthread_mutex_init(&forks.forks[i], NULL);
+	ft_bzero(&sh_var, sizeof(t_shared_var));
+	pthread_mutex_init(&sh_var.state_m, NULL);
+	pthread_mutex_init(&sh_var.print_m, NULL);
+	init_struct_var(data, arg);
+	i = -1;
+	while (++i < data->datarg.num_of_philo)
 	{
-		pthread_mutex_init(&data[i].fork_philo, NULL);
-		data[i].fork_philo_p = &data[i].fork_philo;
-		data[i].datarg = arg;
-		data[i].start = &start;
-		state[i] = 0;
-		data[i].state_p = state;
+		data[i].fork_s = forks;
+		data[i].state_mutex = &sh_var.state_m;
+		data[i].print = &sh_var.print_m;
+		data[i].state_p = &sh_var.state_p;
 	}
-	thread_init(data);
-	start = 0;
-	thread_destroy(data, state);
+	start_fct(data, arg);
 }
 
 int	main(int argc, char **argv)
 {
 	struct s_data_arg	datarg;
+	int					i;
 
+	i = -1;
 	if (argc < 5 || argc > 6)
-	{
-		printf("Wrong number of arguments\n");
-		return (0);
-	}
+		return (printf("Wrong number of arguments\n"), 1);
+	if (check_params(argv) == 0)
+		return (printf("Bad parameters\n"), 1);
 	datarg.num_of_philo = ft_atoi(argv[1]);
 	datarg.tto_die = ft_atoi(argv[2]);
 	datarg.tto_eat = ft_atoi(argv[3]);
@@ -120,12 +92,10 @@ int	main(int argc, char **argv)
 	if (check(datarg) == 1)
 		return (1);
 	if (argc == 6)
-	{
 		datarg.notepme = ft_atoi(argv[5]);
-		datarg.boolnotepme = 1;
-	}
-	else
-		datarg.boolnotepme = 0;
-	thread_creation(datarg);
+	if (datarg.num_of_philo < 1 || (argc == 6 && datarg.notepme <= 0))
+		return (printf("Bad parameters\n"), 1);
+	datarg.boolnotepme = (argc == 6);
+	thread_creation(datarg, i);
 	return (0);
 }
